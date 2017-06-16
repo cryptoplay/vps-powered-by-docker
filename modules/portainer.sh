@@ -5,6 +5,10 @@ PORTAINER_DOMAIN="portainer.lan"
 PORTAINER_NAME="portainer"
 LETSENCRYPT_EMAIL="foo@bar.mail"
 
+# Prepare the Mail Server data folder
+echo ">> Creating /data/portainer folder..."
+mkdir -p /data/portainer &>/dev/null
+
 # Install Portainer
 echo ">> Running Portainer..."
 docker run \
@@ -13,6 +17,7 @@ docker run \
     --privileged \
     -d \
     -v /var/run/docker.sock:/var/run/docker.sock \
+    -v /data/portainer:/data
     -e "VIRTUAL_HOST=$PORTAINER_DOMAIN" \
     -e "VIRTUAL_PORT=9000" \
     -e "LETSENCRYPT_HOST=$PORTAINER_DOMAIN" \

@@ -6,8 +6,8 @@ MAILSERVER_NAME="mail-server"
 LETSENCRYPT_EMAIL="foo@bar.mail"
 
 # Prepare the Mail Server data folder
-echo ">> Creating /srv/mail folder..."
-mkdir -p /srv/mail &>/dev/null
+echo ">> Creating /data/mail folder..."
+mkdir -p /data/mail &>/dev/null
 
 # Install the Mail Server
 echo ">> Running Mail server..."
@@ -25,7 +25,7 @@ docker run \
     -p 993:993 \
     -p 995:995 \
     -v /etc/localtime:/etc/localtime:ro \
-    -v /srv/mail:/data \
+    -v /data/mail:/data \
     -e "VIRTUAL_HOST=$MAILSERVER_DOMAIN" \
     -e "LETSENCRYPT_HOST=$MAILSERVER_DOMAIN" \
     -e "LETSENCRYPT_EMAIL=$LETSENCRYPT_EMAIL" \
@@ -44,7 +44,7 @@ echo "started!"
 
 # Let's wait until Let's Encrypt SSL certificates are created
 echo -n ">> Waiting for Let's Encrypt Certificates Public Key to be generated..."
-while [ ! -f /srv/certs/$MAILSERVER_DOMAIN/fullchain.pem ]
+while [ ! -f /data/certs/$MAILSERVER_DOMAIN/fullchain.pem ]
 do
     echo -n "."
     sleep 0.5
@@ -52,7 +52,7 @@ done
 echo "created!"
 
 echo -n ">> Waiting for Let's Encrypt Certificates Private Key to be generated..."
-while [ ! -f /srv/certs/$MAILSERVER_DOMAIN/key.pem ]
+while [ ! -f /data/certs/$MAILSERVER_DOMAIN/key.pem ]
 do
     echo -n "."
     sleep 0.5
@@ -61,11 +61,11 @@ echo "created!"
 
 # Hard Link them to the relative SSL directory, in order to use them internally also for SMTP, IMAP and POP3
 echo -n ">> Linking Let's Encrypt Certificates to the newly created $MAILSERVER_NAME docker..."
-ln /srv/certs/$MAILSERVER_DOMAIN/fullchain.pem /srv/mail/ssl/server.crt
-ln /srv/certs/$MAILSERVER_DOMAIN/key.pem /srv/mail/ssl/server.key
+ln /data/certs/$MAILSERVER_DOMAIN/fullchain.pem /data/mail/ssl/server.crt
+ln /data/certs/$MAILSERVER_DOMAIN/key.pem /data/mail/ssl/server.key
 
 # Create an empty CA cert so poste.io can detect our SSL certificate
-touch /srv/mail/ssl/ca.crt
+touch /data/mail/ssl/ca.crt
 
 # Finally restart poste.io Docker in order to use these SSL certificate from now on
 echo -n ">> Restarting $MAILSERVER_NAME Docker..."

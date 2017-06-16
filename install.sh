@@ -1,41 +1,36 @@
 #!/bin/bash
 
-# Install Docker
-echo ">> Installing required packages..."
-yes '' | pacman -Sy --noprogressbar --noconfirm --needed docker git wget &>/dev/null
-
-# Enable and Start docker host service
-echo ">> Enabling docker service..."
-systemctl enable docker.service &>/dev/null
-systemctl start docker.service &>/dev/null
+# Prepare the Automatic Reverse proxy manager certs folder
+echo ">> Source ENV file..."
+source .env &>/dev/null
 
 # Prepare the Automatic Reverse proxy manager certs folder
-echo ">> Creating /srv/certs folder..."
-mkdir -p /srv/certs &>/dev/null
+echo ">> Creating /data/certs folder..."
+mkdir -p /data/certs &>/dev/null
 
 # Prepare the generic git projects container folder
-echo ">> Creating /srv/git folder..."
-mkdir -p /srv/git &>/dev/null
+echo ">> Creating /data/git folder..."
+mkdir -p /data/git &>/dev/null
 
 # Clone the referrals spam protection
-echo ">> Cloning the referrals spam protection project into /srv/git/apache-nginx-referral-spam-blacklist..."
-git clone https://github.com/Stevie-Ray/apache-nginx-referral-spam-blacklist.git /srv/git/apache-nginx-referral-spam-blacklist &>/dev/null
+echo ">> Cloning the referrals spam protection project into /data/git/apache-nginx-referral-spam-blacklist..."
+git clone https://github.com/Stevie-Ray/apache-nginx-referral-spam-blacklist.git /data/git/apache-nginx-referral-spam-blacklist &>/dev/null
 
 # Prepare the generic template container folder
-echo ">> Creating /srv/tmpl folder..."
-mkdir -p /srv/tmpl &>/dev/null
+echo ">> Creating /data/tmpl folder..."
+mkdir -p /data/tmpl &>/dev/null
 
 # Get the new nginx template for the reverse proxy
 echo ">> Getting the nginx template for the reverse proxy which includes referrals spam protection..."
-wget -q https://raw.githubusercontent.com/julianxhokaxhiu/vps-powered-by-docker/master/nginx.tmpl -O /srv/tmpl/nginx.tmpl &>/dev/null
+wget -q https://raw.githubusercontent.com/julianxhokaxhiu/vps-powered-by-docker/master/nginx.tmpl -O /data/tmpl/nginx.tmpl &>/dev/null
 
 # Get the nginx proxy custom configuration
 echo ">> Getting the nginx custom proxy configuration..."
-wget -q https://raw.githubusercontent.com/julianxhokaxhiu/vps-powered-by-docker/master/proxy.conf -O /srv/tmpl/proxy.conf &>/dev/null
+wget -q https://raw.githubusercontent.com/julianxhokaxhiu/vps-powered-by-docker/master/proxy.conf -O /data/tmpl/proxy.conf &>/dev/null
 
 # Prepare the generic vhost container folder
-echo ">> Creating /srv/vhost folder..."
-mkdir -p /srv/vhost &>/dev/null
+echo ">> Creating /data/vhost folder..."
+mkdir -p /data/vhost &>/dev/null
 
 # Install Automatic Reverse proxy manager
 echo ">> Running Reverse Proxy docker..."
@@ -46,11 +41,11 @@ docker run \
     -p 80:80 \
     -p 443:443 \
     -v /usr/share/nginx/html \
-    -v /srv/certs:/etc/nginx/certs:ro \
-    -v /srv/tmpl/nginx.tmpl:/app/nginx.tmpl:ro \
-    -v /srv/tmpl/proxy.conf:/etc/nginx/proxy.conf:ro \
-    -v /srv/vhost/:/etc/nginx/vhost.d \
-    -v /srv/git/apache-nginx-referral-spam-blacklist/referral-spam.conf:/etc/nginx/referral-spam.conf:ro \
+    -v /data/certs:/etc/nginx/certs:ro \
+    -v /data/tmpl/nginx.tmpl:/app/nginx.tmpl:ro \
+    -v /data/tmpl/proxy.conf:/etc/nginx/proxy.conf:ro \
+    -v /data/vhost/:/etc/nginx/vhost.d \
+    -v /data/git/apache-nginx-referral-spam-blacklist/referral-spam.conf:/etc/nginx/referral-spam.conf:ro \
     -v /var/run/docker.sock:/tmp/docker.sock:ro \
     jwilder/nginx-proxy:alpine &>/dev/null
 
@@ -60,7 +55,7 @@ docker run \
   --restart=always \
   --name=docker-auto-reverse-proxy-companion \
   -d \
-  -v /srv/certs:/etc/nginx/certs:rw \
+  -v /data/certs:/etc/nginx/certs:rw \
   --volumes-from docker-auto-reverse-proxy \
   -v /var/run/docker.sock:/var/run/docker.sock:ro \
   jrcs/letsencrypt-nginx-proxy-companion &>/dev/null

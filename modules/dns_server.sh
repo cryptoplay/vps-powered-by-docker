@@ -10,8 +10,8 @@ CRONTAB_TIME="0 10 * * *"
 ENABLE_ADBLOCK=false
 
 # Prepare the DNS Server data folder
-echo ">> Creating /srv/data/$DNSSERVER_DOMAIN folder..."
-mkdir -p "/srv/data/$DNSSERVER_DOMAIN" &>/dev/null
+echo ">> Creating /data/dns/$DNSSERVER_DOMAIN folder..."
+mkdir -p "/data/dns/$DNSSERVER_DOMAIN" &>/dev/null
 
 # Enable IPv6 support in Docker
 echo ">> Enabling IPv6 support in your Docker service..."
@@ -54,7 +54,7 @@ docker run \
     -e "LETSENCRYPT_EMAIL=$LETSENCRYPT_EMAIL" \
     -p 53:53 \
     -p 53:53/udp \
-    -v "/srv/data/$DNSSERVER_DOMAIN:/srv/data" \
+    -v "/data/dns/$DNSSERVER_DOMAIN:/srv/data" \
     julianxhokaxhiu/docker-powerdns &>/dev/null
 
 # Wait until the docker is up and running
